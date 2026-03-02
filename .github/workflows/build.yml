@@ -1,0 +1,36 @@
+name: Build App for Win and Mac
+
+on:
+  push:
+    branches: [ "main" ] # Chạy mỗi khi bạn push code lên branch main
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest] # Build cho cả 2 hệ điều hành
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Build with PyInstaller
+      run: |
+        # Lệnh build chung, tự động nhận diện OS để đóng gói
+        pyinstaller --noconsole --onefile --name "YT_Downloader_${{ matrix.os }}" --collect-all customtkinter main.py
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: App-${{ matrix.os }}
+        path: dist/ # Thư mục chứa file sau khi build xong
